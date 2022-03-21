@@ -2,10 +2,12 @@ import type { GetStaticProps, NextPage } from 'next'
 
 import Head from 'next/head'
 import { Fragment } from 'react'
-import { Container, SimpleGrid } from '@chakra-ui/react'
+import { Box, Checkbox, Container, Flex, Grid, Heading, Input, RangeSlider, RangeSliderFilledTrack, RangeSliderThumb, RangeSliderTrack, SimpleGrid, Tag } from '@chakra-ui/react'
+import { StarIcon } from '@chakra-ui/icons'
 
+import { Header } from '../components/Header'
+import { ProductStore } from '../components/ProductStore'
 import { fakeProducts } from './api/products'
-import { Product } from '../components/Product'
 
 interface SSG {
   products: Array<{
@@ -25,18 +27,97 @@ const Home: NextPage<SSG> = ({ products }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Container 
-        marginY="4"
-        maxW="container.lg"
-      >
-        <SimpleGrid 
-          marginX="auto"
+      <Header />
+
+      <Container maxW="container.xl" display="flex">
+        <Box width="full" maxWidth="72" marginRight="8">
+          <Tag paddingX="4" paddingY="2">9 produto(s) encontrado(s)</Tag>
+
+          <Box mt="4">
+            <Heading as="h2" fontSize="xl">Categorias</Heading>
+            <Flex mt="1" flexDirection="column">
+              <Checkbox colorScheme="blackAlpha">Celular</Checkbox>
+              <Checkbox colorScheme="blackAlpha">Smart TV</Checkbox>
+              <Checkbox colorScheme="blackAlpha">Headset</Checkbox>
+              <Checkbox colorScheme="blackAlpha">Cadeira</Checkbox>
+              <Checkbox colorScheme="blackAlpha">Videogame</Checkbox>
+              <Checkbox colorScheme="blackAlpha">Notebook</Checkbox>
+              <Checkbox colorScheme="blackAlpha">Teclado</Checkbox>
+            </Flex>
+          </Box>
+          
+          <Box mt="6">
+            <Heading as="h2" fontSize="xl">Classificação</Heading>
+            <Flex mt="1" flexDirection="column">
+              <Checkbox colorScheme="blackAlpha">
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} />
+              </Checkbox>
+              <Checkbox colorScheme="blackAlpha">
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+              </Checkbox>
+              <Checkbox colorScheme="blackAlpha">
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+              </Checkbox>
+              <Checkbox colorScheme="blackAlpha">
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+              </Checkbox>
+              <Checkbox colorScheme="blackAlpha">
+                <StarIcon w={3} h={3} mr={1} />
+                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+              </Checkbox>
+            </Flex>
+          </Box>
+
+          <Box mt="6">
+            <Heading as="h2" fontSize="xl">Preço</Heading>
+            <Flex mt="2" flexDirection="column">
+              <RangeSlider aria-label={['min', 'max']} defaultValue={[0, 5000]} colorScheme="blackAlpha">
+                <RangeSliderTrack>
+                  <RangeSliderFilledTrack />
+                </RangeSliderTrack>
+                <RangeSliderThumb index={0} />
+                <RangeSliderThumb index={1} />
+              </RangeSlider>
+              <Grid mt="2" gridTemplateColumns="1fr 1fr" gap="6">
+                <Flex flexDirection="column">
+                  <Box fontSize="sm" fontWeight="bold">Min</Box>
+                  <Input placeholder="R$ 0" type="number" />
+                </Flex>
+                <Flex flexDirection="column">
+                  <Box fontSize="sm" fontWeight="bold">Max</Box>
+                  <Input placeholder="R$ 5.000" type="number" />
+                </Flex>
+              </Grid>
+            </Flex>
+          </Box>
+        </Box>
+        <SimpleGrid
+          width="75%"
           justifyItems="center"
-          minChildWidth="240px"
-          spacing="16"
+          minChildWidth="256px"
+          spacing="8"
         >
           { products.map(({ id, image, name, price }) => (
-              <Product 
+              <ProductStore 
                 key={id}
                 image={image}
                 name={name}
