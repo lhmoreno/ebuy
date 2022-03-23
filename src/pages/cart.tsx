@@ -8,7 +8,7 @@ import { Header } from '../components/Header'
 import { ProductCart } from '../components/ProductCart'
 import { fakeProducts } from './api/products'
 
-const Home: NextPage = () => {
+const Cart: NextPage = () => {
   return (
     <Fragment>
       <Head>
@@ -78,4 +78,4 @@ const Home: NextPage = () => {
   )
 }
 
-export default Home
+export default Cart
