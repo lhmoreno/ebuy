@@ -1,14 +1,22 @@
 import type { NextPage } from 'next'
 
 import Head from 'next/head'
-import { Fragment } from 'react'
-import { Box, Button, Container, Divider, Flex, Heading, Table, Tbody, Text, Th, Thead, Tr } from '@chakra-ui/react'
+import { ChangeEventHandler, Fragment, useState } from 'react'
+import { Box, Button, Container, Divider, Flex, Heading, Input, Table, Tbody, Text, Th, Thead, Tr } from '@chakra-ui/react'
 
 import { Header } from '../components/Header'
 import { ProductCart } from '../components/ProductCart'
 import { fakeProducts } from './api/products'
+import { formatPriceInReal } from '../utils/price'
 
 const Cart: NextPage = () => {
+  const [cep, setCep] = useState('')
+  const [subtotal, setSubtotal] = useState(fakeProducts.reduce((a, b) => a + b.price, 0))
+
+  const onChangeCep: ChangeEventHandler<HTMLInputElement> = (event) => {
+    if (event.target.value.length <= 8 ) setCep(event.target.value)
+  }
+
   return (
     <Fragment>
       <Head>
@@ -36,43 +44,85 @@ const Cart: NextPage = () => {
                 image={image}
                 name={name}
                 price={price}
+                onChangePrice={(type, number) => type === 'add' ? setSubtotal(v => v + number) : setSubtotal(v => v - number)}
               />
             )) }
           </Tbody>
         </Table>
-        <Box 
-          backgroundColor="blackAlpha.100" 
-          pt="6"
-          px="8"
-          borderRadius="lg"
-          height="max-content"
-        >
-          <Heading
-            as="h2"
-            fontSize="2xl"
-            fontWeight="regular"
-            color="blackAlpha.600"
+        <Flex flexDirection="column" gap="8">
+          <Box 
+            backgroundColor="blackAlpha.100" 
+            py="6"
+            px="8"
+            borderRadius="lg"
+            height="max-content"
           >
-            Resumo
-          </Heading>
-          <Flex mt="8" justifyContent="space-between">
-            <Text>Sub-total:</Text>
-            <Text fontWeight="bold">R$12.345,90</Text>
-          </Flex>
-          <Flex mt="4" justifyContent="space-between">
-            <Text>Frete:</Text>
-            <Text fontWeight="bold">R$30,20</Text>
-          </Flex>
-          <Divider my="4" borderColor="white"  borderWidth={4} variant="dashed" />
-          <Flex justifyContent="space-between">
-            <Text fontSize="lg">Total:</Text>
-            <Text fontSize="lg" fontWeight="bold">R$12.376,10</Text>
-          </Flex>
+            <Heading
+              as="h2"
+              fontSize="2xl"
+              fontWeight="regular"
+              color="blackAlpha.600"
+            >
+              Calcular frete
+            </Heading>
+            <Flex mt="8" alignItems="center">
+              <Text>CEP:</Text>
+              <Input 
+                type="number"
+                value={cep}
+                onChange={onChangeCep}
+                maxLength={8}
+                placeholder="00000000"
+                mx="1"
+                backgroundColor="white"
+              />
+              <Button variant="outline" colorScheme="blackAlpha">
+                OK
+              </Button>
+            </Flex>
+            <Flex mt="4" justifyContent="space-between">
+              <Text>Cidade:</Text>
+              <Text fontWeight="bold">Itararé/SP</Text>
+            </Flex>
+            <Flex mt="4" justifyContent="space-between">
+              <Text>Valor:</Text>
+              <Text fontWeight="bold">R$30,20</Text>
+            </Flex>
+          </Box>
+          <Box 
+            backgroundColor="blackAlpha.100" 
+            pt="6"
+            px="8"
+            borderRadius="lg"
+            height="max-content"
+          >
+            <Heading
+              as="h2"
+              fontSize="2xl"
+              fontWeight="regular"
+              color="blackAlpha.600"
+            >
+              Resumo
+            </Heading>
+            <Flex mt="8" justifyContent="space-between">
+              <Text>Sub-total:</Text>
+              <Text fontWeight="bold">{ formatPriceInReal(subtotal) }</Text>
+            </Flex>
+            <Flex mt="4" justifyContent="space-between">
+              <Text>Frete:</Text>
+              <Text fontWeight="bold">R$30,20</Text>
+            </Flex>
+            <Divider my="4" borderColor="white"  borderWidth={4} variant="dashed" />
+            <Flex justifyContent="space-between">
+              <Text fontSize="lg">Total:</Text>
+              <Text fontSize="lg" fontWeight="bold">R$12.376,10</Text>
+            </Flex>
 
-          <Button my="6" width="full" variant="outline" colorScheme="blackAlpha">
-            Faker checkout
-          </Button>
-        </Box>
+            <Button my="6" width="full" variant="outline" colorScheme="blackAlpha">
+              Faker checkout
+            </Button>
+          </Box>
+        </Flex>
       </Container>
     </Fragment>
   )
