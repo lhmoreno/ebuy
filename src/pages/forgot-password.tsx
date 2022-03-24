@@ -2,13 +2,29 @@ import type { NextPage } from 'next'
 
 import Head from 'next/head'
 import NextLink from 'next/link'
-import { Fragment } from 'react'
+import { FormEvent, Fragment, useRef } from 'react'
 import { Button, Container, Flex, Heading, Input, Link } from '@chakra-ui/react'
 import { ArrowBackIcon } from '@chakra-ui/icons'
 
 import { Header } from '../components/Header'
 
-const ForgetPassword: NextPage = () => {
+const ForgotPassword: NextPage = () => {
+  const emailRef = useRef<HTMLInputElement>(null)
+
+  function onSubmitForgotPassword(event: FormEvent) {
+    event.preventDefault()
+
+    if (!emailRef.current) return
+
+    const { value: email } = emailRef.current
+
+    if (email === '') return
+
+    console.log({
+      email
+    })
+  }
+
   return (
     <Fragment>
       <Head>
@@ -43,7 +59,6 @@ const ForgetPassword: NextPage = () => {
             height="full"
             flexDirection="column"
             justifyContent="center"
-            gap="2"
           >
             <Heading
               as="h2"
@@ -52,15 +67,20 @@ const ForgetPassword: NextPage = () => {
             >
               Recuperar senha
             </Heading>
-            <Input 
-              type="email"
-              placeholder="Digite seu email"
-              backgroundColor="white"
-            />
-            <Button
-              width="full"
-              colorScheme="blackAlpha"
-            >ENVIAR</Button>
+            <form onSubmit={onSubmitForgotPassword}>
+              <Input 
+                ref={emailRef}
+                type="email"
+                placeholder="Digite seu email"
+                backgroundColor="white"
+              />
+              <Button
+                type="submit"
+                width="full"
+                marginTop="2"
+                colorScheme="blackAlpha"
+              >ENVIAR</Button>
+            </form>
           </Flex>
         </Flex>
       </Container>
@@ -68,4 +88,4 @@ const ForgetPassword: NextPage = () => {
   )
 }
 
-export default ForgetPassword
+export default ForgotPassword

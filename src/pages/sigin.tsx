@@ -2,13 +2,53 @@ import type { NextPage } from 'next'
 
 import Head from 'next/head'
 import NextLink from 'next/link'
-import { Fragment } from 'react'
+import { FormEvent, Fragment, useRef } from 'react'
 import { Button, Container, Flex, Heading, Input, Link } from '@chakra-ui/react'
 import { ArrowBackIcon } from '@chakra-ui/icons'
 
 import { Header } from '../components/Header'
 
+interface InputNextElement extends HTMLInputElement {
+  isFocused: boolean
+}
+
 const Sigin: NextPage = () => {
+  const nameRef = useRef<InputNextElement>(null)
+  const emailRef = useRef<InputNextElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
+
+  function onSubmitSigin(event: FormEvent) {
+    event.preventDefault()
+
+    if (!passwordRef.current || !emailRef.current || !nameRef.current) return
+
+    const { value: name } = nameRef.current
+    const { value: email } = emailRef.current
+    const { value: password } = passwordRef.current
+
+    if (name === '') return
+    
+    if (nameRef.current.isFocused) {
+      emailRef.current.focus()
+      return
+    }
+
+    if (email === '') return
+    
+    if (emailRef.current.isFocused) {
+      passwordRef.current.focus()
+      return
+    }
+    
+    if (password.length < 4) return
+
+    console.log({
+      name,
+      email,
+      password
+    })
+  }
+
   return (
     <Fragment>
       <Head>
@@ -58,25 +98,55 @@ const Sigin: NextPage = () => {
                 </Link>
               </NextLink>
             </Flex>
-            <Input 
-              type="text"
-              placeholder="Digite seu nome"
-              backgroundColor="white"
-            />
-            <Input 
-              type="email"
-              placeholder="Digite um email"
-              backgroundColor="white"
-            />
-            <Input 
-              type="password"
-              placeholder="Digite uma senha"
-              backgroundColor="white"
-            />
-            <Button
-              width="full"
-              colorScheme="blackAlpha"
-            >CADASTRAR</Button>
+            <form onSubmit={onSubmitSigin}>
+              <Input 
+                ref={nameRef}
+                onFocus={() => {
+                  if (nameRef.current) {
+                    return nameRef.current.isFocused = true
+                  }
+                }}
+                onBlur={() => {
+                  if (nameRef.current) {
+                    return nameRef.current.isFocused = false
+                  }
+                }}
+                type="text"
+                placeholder="Digite seu nome"
+                backgroundColor="white"
+              />
+              <Input 
+                ref={emailRef}
+                onFocus={() => {
+                  if (emailRef.current) {
+                    return emailRef.current.isFocused = true
+                  }
+                }}
+                onBlur={() => {
+                  if (emailRef.current) {
+                    return emailRef.current.isFocused = false
+                  }
+                }}
+                type="email"
+                placeholder="Digite um email"
+                marginTop="2"
+                backgroundColor="white"
+              />
+              <Input 
+                ref={passwordRef}
+                autoComplete="on"
+                type="password"
+                placeholder="Digite uma senha"
+                marginTop="2"
+                backgroundColor="white"
+              />
+              <Button
+                type="submit"
+                width="full"
+                marginTop="2"
+                colorScheme="blackAlpha"
+              >CADASTRAR</Button>
+            </form>
           </Flex>
         </Flex>
       </Container>

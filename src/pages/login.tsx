@@ -2,12 +2,42 @@ import type { NextPage } from 'next'
 
 import Head from 'next/head'
 import NextLink from 'next/link'
-import { Fragment } from 'react'
+import { FormEvent, Fragment, useRef } from 'react'
 import { Button, Container, Flex, Heading, Input, Link } from '@chakra-ui/react'
 
 import { Header } from '../components/Header'
 
+interface EmailElement extends HTMLInputElement {
+  isFocused: boolean
+}
+
 const Login: NextPage = () => {
+  const emailRef = useRef<EmailElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
+
+  function onSubmitLogin(event: FormEvent) {
+    event.preventDefault()
+
+    if (!passwordRef.current || !emailRef.current) return
+
+    const { value: email } = emailRef.current
+    const { value: password } = passwordRef.current
+
+    if (email === '') return
+    
+    if (emailRef.current.isFocused) {
+      passwordRef.current.focus()
+      return
+    }
+    
+    if (password.length < 4) return
+
+    console.log({
+      email,
+      password
+    })
+  }
+
   return (
     <Fragment>
       <Head>
@@ -48,20 +78,39 @@ const Login: NextPage = () => {
               </Link>
             </NextLink>
           </Flex>
-          <Input 
-            type="email"
-            placeholder="Digite seu email"
-            backgroundColor="white"
-          />
-          <Input 
-            type="password"
-            placeholder="Digite sua senha"
-            backgroundColor="white"
-          />
-          <Button
-            width="full"
-            colorScheme="blackAlpha"
-          >ENTRAR</Button>
+          <form onSubmit={onSubmitLogin}>
+            <Input 
+              ref={emailRef}
+              autoFocus
+              onFocus={() => {
+                if (emailRef.current) {
+                  return emailRef.current.isFocused = true
+                }
+              }}
+              onBlur={() => {
+                if (emailRef.current) {
+                  return emailRef.current.isFocused = false
+                }
+              }}
+              type="email"
+              placeholder="Digite seu email"
+              backgroundColor="white"
+            />
+            <Input 
+              ref={passwordRef}
+              type="password"
+              autoComplete="on"
+              marginTop="2"
+              placeholder="Digite sua senha"
+              backgroundColor="white"
+            />
+            <Button
+              type="submit"
+              marginTop="2"
+              width="full"
+              colorScheme="blackAlpha"
+            >ENTRAR</Button>
+          </form>
           <NextLink href="/forgot-password" passHref>
             <Link color="blue.500" textAlign="center" marginTop="4">
               Esqueci minha senha
