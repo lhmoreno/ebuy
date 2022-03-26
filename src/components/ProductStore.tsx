@@ -1,18 +1,20 @@
-import { StarIcon } from '@chakra-ui/icons'
 import { Box, Button, Heading, Image, Text } from '@chakra-ui/react'
 
+import { Rating } from './Rating'
 import { formatPriceInReal } from '../utils/price'
 
-export interface ProductStoreProps {
-  image: string
-  name: string
+interface ProductStoreProps {
+  title: string
   price: number
+  image: string
+  rating: number
 }
 
-const ProductStore = ({ image, name, price }: ProductStoreProps) => {
+const ProductStore = ({ image, title, price, rating }: ProductStoreProps) => {
   return (
     <Box 
       height="96"
+      width="64"
       padding="4"
       borderWidth="1px" 
       borderRadius="lg"
@@ -21,24 +23,20 @@ const ProductStore = ({ image, name, price }: ProductStoreProps) => {
       justifyContent="space-between"
     >
       <Image 
-        src={image} alt="Carro"
+        src={image} alt={title}
+        height="24"
+        objectFit="contain"
         borderRadius="md"
       />
 
       <Box>
-        <Box>
-          <StarIcon w={3} h={3} mr={1} />
-          <StarIcon w={3} h={3} mr={1} />
-          <StarIcon w={3} h={3} mr={1} />
-          <StarIcon w={3} h={3} mr={1} />
-          <StarIcon w={3} h={3} />
-        </Box>
+        <Rating stars={rating} />
         <Heading
           as="h3"
           marginTop="2"
           fontWeight="bold"
           fontSize="md"
-        >{ name }</Heading>
+        >{ title }</Heading>
         <Text marginTop="1">
           { formatPriceInReal(price) }
         </Text>

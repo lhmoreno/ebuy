@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react'
 import { formatPriceInReal } from '../utils/price'
 
 export interface ProductCartProps {
-  image: string
-  name: string
+  title: string
   price: number
+  image: string
   onChangePrice?: (type: 'add' | 'sub', price: number) => void
 }
 
 let isAdd = true
 
-const ProductCart = ({ image, name, price: basePrice, onChangePrice }: ProductCartProps) => {
+const ProductCart = ({ image, title, price: basePrice, onChangePrice }: ProductCartProps) => {
   const [amount, setAmount] = useState(1)
   const [price, setPrice] = useState(basePrice)
 
@@ -52,7 +52,7 @@ const ProductCart = ({ image, name, price: basePrice, onChangePrice }: ProductCa
             marginTop="2"
             fontWeight="bold"
             fontSize="md"
-          >{ name }</Heading>
+          >{ title }</Heading>
         </Flex>
       </Td>
 
