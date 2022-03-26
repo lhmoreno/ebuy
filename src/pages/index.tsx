@@ -1,24 +1,62 @@
-import type { GetStaticProps, NextPage } from 'next'
+import type { GetServerSideProps, NextPage } from 'next'
+import type { Product } from '../@types/Product'
 
 import Head from 'next/head'
-import { Fragment } from 'react'
+import { useRouter } from 'next/router'
+import { Fragment, useEffect, useState } from 'react'
 import { Box, Checkbox, Container, Flex, Grid, Heading, Input, RangeSlider, RangeSliderFilledTrack, RangeSliderThumb, RangeSliderTrack, SimpleGrid, Tag } from '@chakra-ui/react'
-import { StarIcon } from '@chakra-ui/icons'
 
+import { api } from '../services/fakeStore'
 import { Header } from '../components/Header'
 import { ProductStore } from '../components/ProductStore'
-import { fakeProducts } from './api/products'
+import { Rating } from '../components/Rating'
+import { ParsedUrlQuery } from 'querystring'
 
-interface SSG {
-  products: Array<{
-    id: string
-    image: string
-    name: string
-    price: number
-  }>
+interface SSR {
+  products: Array<Product>
 }
 
-const Home: NextPage<SSG> = ({ products }) => {
+type Category = 'clothes' | 'jewelery' | 'electronics'
+
+interface MyQuery extends ParsedUrlQuery {
+  category?: Category | Category[]
+}
+
+const Home: NextPage<SSR> = ({ products }) => {
+  const router = useRouter()
+  const query = router.query as MyQuery
+  const [selectedCategories, setSelectedCategories] = useState<Array<Category>>([])
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    if (!query.category) return
+
+    if (typeof(query.category) === 'string') return setSelectedCategories([query.category])
+
+    return setSelectedCategories([...query.category])
+  }, [])
+
+  useEffect(() => {
+    setIsLoading(false)
+  }, [query])
+
+  function handleAddCategory(category: Category) {
+    setIsLoading(true)
+    setSelectedCategories(categories => [...categories, category])
+
+    if (!query.category) return router.push({ query: { category } })
+    if (typeof(query.category) === 'string') return router.push({ query: { category: [ query.category, category] } })
+    return router.push({ query: { category: [...query.category, category] } })
+  }
+
+  function handleRemoveCategory(category: Category) {
+    setIsLoading(true)
+    setSelectedCategories(categories => categories.filter(cat => cat !== category))
+
+    if (typeof(query.category) === 'string') return router.push({ query: undefined })
+    return router.push({ query: { category: query.category?.filter((cat) => cat !== category) } })
+  }
+
   return (
     <Fragment>
       <Head>
@@ -31,18 +69,32 @@ const Home: NextPage<SSG> = ({ products }) => {
 
       <Container maxW="container.xl" display="flex">
         <Box width="full" maxWidth="72" marginRight="8">
-          <Tag paddingX="4" paddingY="2">9 produto(s) encontrado(s)</Tag>
+          <Tag paddingX="4" paddingY="2">{ products.length } produto(s) encontrado(s)</Tag>
 
           <Box mt="4">
             <Heading as="h2" fontSize="xl">Categorias</Heading>
             <Flex mt="1" flexDirection="column">
-              <Checkbox colorScheme="blackAlpha">Celular</Checkbox>
-              <Checkbox colorScheme="blackAlpha">Smart TV</Checkbox>
-              <Checkbox colorScheme="blackAlpha">Headset</Checkbox>
-              <Checkbox colorScheme="blackAlpha">Cadeira</Checkbox>
-              <Checkbox colorScheme="blackAlpha">Videogame</Checkbox>
-              <Checkbox colorScheme="blackAlpha">Notebook</Checkbox>
-              <Checkbox colorScheme="blackAlpha">Teclado</Checkbox>
+              <Checkbox 
+                colorScheme="blackAlpha"
+                onChange={(event) => event.target.checked ? handleAddCategory('clothes') : handleRemoveCategory('clothes')}
+                isChecked={selectedCategories.includes('clothes')}
+              >
+                Roupas
+              </Checkbox>
+              <Checkbox 
+                colorScheme="blackAlpha"
+                onChange={(event) => event.target.checked ? handleAddCategory('jewelery') : handleRemoveCategory('jewelery')}
+                isChecked={selectedCategories.includes('jewelery')}
+              >
+                Jóias
+              </Checkbox>
+              <Checkbox 
+                colorScheme="blackAlpha"
+                onChange={(event) => event.target.checked ? handleAddCategory('electronics') : handleRemoveCategory('electronics')}
+                isChecked={selectedCategories.includes('electronics')}
+              >
+                Eletrônicos
+              </Checkbox>
             </Flex>
           </Box>
           
@@ -50,39 +102,19 @@ const Home: NextPage<SSG> = ({ products }) => {
             <Heading as="h2" fontSize="xl">Classificação</Heading>
             <Flex mt="1" flexDirection="column">
               <Checkbox colorScheme="blackAlpha">
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} />
+                <Rating stars={5} />
               </Checkbox>
               <Checkbox colorScheme="blackAlpha">
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+                <Rating stars={4} />
               </Checkbox>
               <Checkbox colorScheme="blackAlpha">
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
-                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+                <Rating stars={3} />
               </Checkbox>
               <Checkbox colorScheme="blackAlpha">
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
-                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
-                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+                <Rating stars={2} />
               </Checkbox>
               <Checkbox colorScheme="blackAlpha">
-                <StarIcon w={3} h={3} mr={1} />
-                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
-                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
-                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
-                <StarIcon w={3} h={3} mr={1} color="blackAlpha.300" />
+                <Rating stars={1} />
               </Checkbox>
             </Flex>
           </Box>
@@ -110,33 +142,57 @@ const Home: NextPage<SSG> = ({ products }) => {
             </Flex>
           </Box>
         </Box>
-        <SimpleGrid
-          width="75%"
-          justifyItems="center"
-          minChildWidth="256px"
-          spacing="8"
-        >
-          { products.map(({ id, image, name, price }) => (
-              <ProductStore 
-                key={id}
-                image={image}
-                name={name}
-                price={price}
-              />
-            ))
-          }
-        </SimpleGrid>
+        { !isLoading ? (
+            <SimpleGrid
+              width="75%"
+              justifyItems="center"
+              minChildWidth="256px"
+              spacing="8"
+            >
+              { products.map(({ id, image, title, price, rating }) => (
+                  <ProductStore 
+                    key={id}
+                    image={image}
+                    title={title}
+                    price={price}
+                    rating={rating.rate}
+                  />
+                ))
+              }
+            </SimpleGrid>
+          ) : (
+            <Flex
+              width="full"
+              justifyContent="center"
+              alignItems="center"
+            >
+              Carregando...
+            </Flex>
+          )
+        }
       </Container>
     </Fragment>
   )
 }
 
-export const getStaticProps: GetStaticProps = async () => {
-  return {
-    props: {
-      products: fakeProducts
-    }
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+  const { data } = await api.get('/products')
+  let products = data as Product[] | undefined
+  
+  if (!products) return { props: { products: [] } }
+  if (!query.category) return { props: { products } }
+
+  let categories = typeof(query.category) === 'string' ? [query.category] : query.category
+
+  if (categories.includes('clothes')) {
+    categories = categories.filter(category => category !== 'clothes')
+    categories.push("men's clothing")
+    categories.push("women's clothing")
   }
+
+  products = products.filter(({ category }) => categories.includes(category))
+
+  return { props: { products } }
 }
 
 export default Home

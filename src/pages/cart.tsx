@@ -1,4 +1,4 @@
-import type { NextPage } from 'next'
+import type { GetServerSideProps, NextPage } from 'next'
 
 import Head from 'next/head'
 import { ChangeEventHandler, Fragment, useState } from 'react'
@@ -6,12 +6,18 @@ import { Box, Button, Container, Divider, Flex, Heading, Input, Table, Tbody, Te
 
 import { Header } from '../components/Header'
 import { ProductCart } from '../components/ProductCart'
-import { fakeProducts } from './api/products'
 import { formatPriceInReal } from '../utils/price'
+import { Product } from '../@types/Product'
+import { api } from '../services/fakeStore'
 
-const Cart: NextPage = () => {
+// Trash
+interface SSR {
+  products: Array<Product>
+}
+
+const Cart: NextPage<SSR> = ({ products }) => {
   const [cep, setCep] = useState('')
-  const [subtotal, setSubtotal] = useState(fakeProducts.reduce((a, b) => a + b.price, 0))
+  const [subtotal, setSubtotal] = useState(products.reduce((a, b) => a + b.price, 0))
 
   const onChangeCep: ChangeEventHandler<HTMLInputElement> = (event) => {
     if (event.target.value.length <= 8 ) setCep(event.target.value)
@@ -38,11 +44,11 @@ const Cart: NextPage = () => {
           </Thead>
 
           <Tbody>
-            { fakeProducts.map(({ id, image, name, price }) => (
+            { products.map(({ id, image, title, price }) => (
               <ProductCart 
                 key={id}
                 image={image}
-                name={name}
+                title={title}
                 price={price}
                 onChangePrice={(type, number) => type === 'add' ? setSubtotal(v => v + number) : setSubtotal(v => v - number)}
               />
@@ -126,6 +132,16 @@ const Cart: NextPage = () => {
       </Container>
     </Fragment>
   )
+}
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const { data: products } = await api.get('/products')
+
+  return {
+    props: {
+      products
+    }
+  }
 }
 
 export default Cart
