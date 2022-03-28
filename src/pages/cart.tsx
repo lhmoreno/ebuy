@@ -1,23 +1,46 @@
-import type { GetServerSideProps, NextPage } from 'next'
+import type { NextPage } from 'next'
 
 import Head from 'next/head'
-import { ChangeEventHandler, Fragment, useState } from 'react'
+import { ChangeEventHandler, Fragment, useEffect, useState } from 'react'
 import { Box, Button, Container, Divider, Flex, Heading, Input, Table, Tbody, Text, Th, Thead, Tr } from '@chakra-ui/react'
 
+import { ebuy } from '../services/ebuyApi'
 import { Header } from '../components/Header'
 import { ProductCart } from '../components/ProductCart'
 import { formatPriceInReal } from '../utils/price'
 import { Product } from '../@types/Product'
-import { api } from '../services/fakeStore'
 
-// Trash
-interface SSR {
-  products: Array<Product>
+export interface CartStorage {
+  id: number
+  quanty: number
 }
 
-const Cart: NextPage<SSR> = ({ products }) => {
+interface ProductCart extends Product {
+  quanty: number
+}
+
+const Cart: NextPage = () => {
   const [cep, setCep] = useState('')
-  const [subtotal, setSubtotal] = useState(products.reduce((a, b) => a + b.price, 0))
+  // const [subtotal, setSubtotal] = useState(products.reduce((a, b) => a + b.price, 0))
+  const [productsCart, setProductsCart] = useState<Array<ProductCart>>([])
+  const [subtotal, setSubtotal] = useState(0)
+
+  useEffect(() => {
+    const cartStorage = localStorage.getItem('cart')
+    const cart = cartStorage ? JSON.parse(cartStorage) as CartStorage[] : []
+    
+    if (cart) {
+      (async () => {
+        const ids = cart.map(({ id }) => id)
+        const res = await ebuy.get('/products', { params: { id: ids } })
+        const data = res.data as Product[]
+        
+        const products: ProductCart[] = data.map((product, index) => ({ ...product, quanty: cart[index].quanty }))
+
+        setProductsCart(products)
+      })()
+    }
+  }, [])
 
   const onChangeCep: ChangeEventHandler<HTMLInputElement> = (event) => {
     if (event.target.value.length <= 8 ) setCep(event.target.value)
@@ -44,10 +67,11 @@ const Cart: NextPage<SSR> = ({ products }) => {
           </Thead>
 
           <Tbody>
-            { products.map(({ id, image, title, price }) => (
+            { productsCart.map(({ id, image_url, title, price, quanty }) => (
               <ProductCart 
                 key={id}
-                image={image}
+                quanty={quanty}
+                image_url={image_url}
                 title={title}
                 price={price}
                 onChangePrice={(type, number) => type === 'add' ? setSubtotal(v => v + number) : setSubtotal(v => v - number)}
@@ -132,16 +156,6 @@ const Cart: NextPage<SSR> = ({ products }) => {
       </Container>
     </Fragment>
   )
-}
-
-export const getServerSideProps: GetServerSideProps = async () => {
-  const { data: products } = await api.get('/products')
-
-  return {
-    props: {
-      products
-    }
-  }
 }
 
 export default Cart

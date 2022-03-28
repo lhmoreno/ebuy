@@ -4,13 +4,15 @@ import { Rating } from './Rating'
 import { formatPriceInReal } from '../utils/price'
 
 interface ProductStoreProps {
+  id: number
   title: string
   price: number
-  image: string
+  image_url: string
   rating: number
+  buy?: (product_id: number) => void
 }
 
-const ProductStore = ({ image, title, price, rating }: ProductStoreProps) => {
+const ProductStore = ({ id, image_url, title, price, rating, buy }: ProductStoreProps) => {
   return (
     <Box 
       height="96"
@@ -23,7 +25,7 @@ const ProductStore = ({ image, title, price, rating }: ProductStoreProps) => {
       justifyContent="space-between"
     >
       <Image 
-        src={image} alt={title}
+        src={image_url} alt={title}
         height="24"
         objectFit="contain"
         borderRadius="md"
@@ -42,7 +44,12 @@ const ProductStore = ({ image, title, price, rating }: ProductStoreProps) => {
         </Text>
       </Box>
 
-      <Button colorScheme="blackAlpha">COMPRAR</Button>
+      <Button 
+        colorScheme="blackAlpha"
+        onClick={() => buy && buy(id)}
+      >
+        COMPRAR
+      </Button>
     </Box>
   )
 }

@@ -2,61 +2,11 @@ import type { GetServerSideProps, NextPage } from 'next'
 import type { Product } from '../@types/Product'
 
 import Head from 'next/head'
-import { useRouter } from 'next/router'
-import { Fragment, useEffect, useState } from 'react'
-import { Box, Checkbox, Container, Flex, Grid, Heading, Input, RangeSlider, RangeSliderFilledTrack, RangeSliderThumb, RangeSliderTrack, SimpleGrid, Tag } from '@chakra-ui/react'
+import { Fragment } from 'react'
 
-import { api } from '../services/fakeStore'
 import { Header } from '../components/Header'
-import { ProductStore } from '../components/ProductStore'
-import { Rating } from '../components/Rating'
-import { ParsedUrlQuery } from 'querystring'
 
-interface SSR {
-  products: Array<Product>
-}
-
-type Category = 'clothes' | 'jewelery' | 'electronics'
-
-interface MyQuery extends ParsedUrlQuery {
-  category?: Category | Category[]
-}
-
-const Home: NextPage<SSR> = ({ products }) => {
-  const router = useRouter()
-  const query = router.query as MyQuery
-  const [selectedCategories, setSelectedCategories] = useState<Array<Category>>([])
-  const [isLoading, setIsLoading] = useState(false)
-
-  useEffect(() => {
-    if (!query.category) return
-
-    if (typeof(query.category) === 'string') return setSelectedCategories([query.category])
-
-    return setSelectedCategories([...query.category])
-  }, [])
-
-  useEffect(() => {
-    setIsLoading(false)
-  }, [query])
-
-  function handleAddCategory(category: Category) {
-    setIsLoading(true)
-    setSelectedCategories(categories => [...categories, category])
-
-    if (!query.category) return router.push({ query: { category } })
-    if (typeof(query.category) === 'string') return router.push({ query: { category: [ query.category, category] } })
-    return router.push({ query: { category: [...query.category, category] } })
-  }
-
-  function handleRemoveCategory(category: Category) {
-    setIsLoading(true)
-    setSelectedCategories(categories => categories.filter(cat => cat !== category))
-
-    if (typeof(query.category) === 'string') return router.push({ query: undefined })
-    return router.push({ query: { category: query.category?.filter((cat) => cat !== category) } })
-  }
-
+const Home: NextPage = () => {
   return (
     <Fragment>
       <Head>
@@ -67,132 +17,9 @@ const Home: NextPage<SSR> = ({ products }) => {
 
       <Header />
 
-      <Container maxW="container.xl" display="flex">
-        <Box width="full" maxWidth="72" marginRight="8">
-          <Tag paddingX="4" paddingY="2">{ products.length } produto(s) encontrado(s)</Tag>
-
-          <Box mt="4">
-            <Heading as="h2" fontSize="xl">Categorias</Heading>
-            <Flex mt="1" flexDirection="column">
-              <Checkbox 
-                colorScheme="blackAlpha"
-                onChange={(event) => event.target.checked ? handleAddCategory('clothes') : handleRemoveCategory('clothes')}
-                isChecked={selectedCategories.includes('clothes')}
-              >
-                Roupas
-              </Checkbox>
-              <Checkbox 
-                colorScheme="blackAlpha"
-                onChange={(event) => event.target.checked ? handleAddCategory('jewelery') : handleRemoveCategory('jewelery')}
-                isChecked={selectedCategories.includes('jewelery')}
-              >
-                Jóias
-              </Checkbox>
-              <Checkbox 
-                colorScheme="blackAlpha"
-                onChange={(event) => event.target.checked ? handleAddCategory('electronics') : handleRemoveCategory('electronics')}
-                isChecked={selectedCategories.includes('electronics')}
-              >
-                Eletrônicos
-              </Checkbox>
-            </Flex>
-          </Box>
-          
-          <Box mt="6">
-            <Heading as="h2" fontSize="xl">Classificação</Heading>
-            <Flex mt="1" flexDirection="column">
-              <Checkbox colorScheme="blackAlpha">
-                <Rating stars={5} />
-              </Checkbox>
-              <Checkbox colorScheme="blackAlpha">
-                <Rating stars={4} />
-              </Checkbox>
-              <Checkbox colorScheme="blackAlpha">
-                <Rating stars={3} />
-              </Checkbox>
-              <Checkbox colorScheme="blackAlpha">
-                <Rating stars={2} />
-              </Checkbox>
-              <Checkbox colorScheme="blackAlpha">
-                <Rating stars={1} />
-              </Checkbox>
-            </Flex>
-          </Box>
-
-          <Box mt="6">
-            <Heading as="h2" fontSize="xl">Preço</Heading>
-            <Flex mt="2" flexDirection="column">
-              <RangeSlider aria-label={['min', 'max']} defaultValue={[0, 5000]} colorScheme="blackAlpha">
-                <RangeSliderTrack>
-                  <RangeSliderFilledTrack />
-                </RangeSliderTrack>
-                <RangeSliderThumb index={0} />
-                <RangeSliderThumb index={1} />
-              </RangeSlider>
-              <Grid mt="2" gridTemplateColumns="1fr 1fr" gap="6">
-                <Flex flexDirection="column">
-                  <Box fontSize="sm" fontWeight="bold">Min</Box>
-                  <Input placeholder="R$ 0" type="number" />
-                </Flex>
-                <Flex flexDirection="column">
-                  <Box fontSize="sm" fontWeight="bold">Max</Box>
-                  <Input placeholder="R$ 5.000" type="number" />
-                </Flex>
-              </Grid>
-            </Flex>
-          </Box>
-        </Box>
-        { !isLoading ? (
-            <SimpleGrid
-              width="75%"
-              justifyItems="center"
-              minChildWidth="256px"
-              spacing="8"
-            >
-              { products.map(({ id, image, title, price, rating }) => (
-                  <ProductStore 
-                    key={id}
-                    image={image}
-                    title={title}
-                    price={price}
-                    rating={rating.rate}
-                  />
-                ))
-              }
-            </SimpleGrid>
-          ) : (
-            <Flex
-              width="full"
-              justifyContent="center"
-              alignItems="center"
-            >
-              Carregando...
-            </Flex>
-          )
-        }
-      </Container>
+      <h1>Home</h1>
     </Fragment>
   )
-}
-
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const { data } = await api.get('/products')
-  let products = data as Product[] | undefined
-  
-  if (!products) return { props: { products: [] } }
-  if (!query.category) return { props: { products } }
-
-  let categories = typeof(query.category) === 'string' ? [query.category] : query.category
-
-  if (categories.includes('clothes')) {
-    categories = categories.filter(category => category !== 'clothes')
-    categories.push("men's clothing")
-    categories.push("women's clothing")
-  }
-
-  products = products.filter(({ category }) => categories.includes(category))
-
-  return { props: { products } }
 }
 
 export default Home

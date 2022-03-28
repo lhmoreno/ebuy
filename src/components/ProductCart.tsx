@@ -6,15 +6,16 @@ import { formatPriceInReal } from '../utils/price'
 export interface ProductCartProps {
   title: string
   price: number
-  image: string
+  image_url: string
+  quanty: number
   onChangePrice?: (type: 'add' | 'sub', price: number) => void
 }
 
 let isAdd = true
 
-const ProductCart = ({ image, title, price: basePrice, onChangePrice }: ProductCartProps) => {
-  const [amount, setAmount] = useState(1)
-  const [price, setPrice] = useState(basePrice)
+const ProductCart = ({ image_url, quanty, title, price: basePrice, onChangePrice }: ProductCartProps) => {
+  const [amount, setAmount] = useState(quanty)
+  const [price, setPrice] = useState(basePrice * quanty)
 
   useEffect(() => {
     if (onChangePrice) {
@@ -43,7 +44,7 @@ const ProductCart = ({ image, title, price: basePrice, onChangePrice }: ProductC
       <Td>
         <Flex alignItems="center" gap="6">
           <Image 
-            src={image} alt="Carro"
+            src={image_url} alt="Carro"
             borderRadius="md"
             maxHeight="24"
           />

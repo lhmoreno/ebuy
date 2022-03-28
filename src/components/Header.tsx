@@ -3,16 +3,17 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { Box, Container, Heading, Link } from '@chakra-ui/react'
 
-type Pathname = '/' | '/cart' | '/login' | '/sigin' | '/forgot-password'
-type PageName = 'products' | 'cart' | 'account'
+type Pathname = '/' | '/store' | '/cart' | '/login' | '/sigin' | '/forgot-password'
+type PageName = 'home' | 'store' | 'cart' | 'account'
 
 const handlePageName: (pathname: Pathname) => PageName = (pathname) =>  {
-  if (pathname === '/') return 'products'
+  if (pathname === '/') return 'home'
+  if (pathname === '/store') return 'store'
   if (pathname === '/cart') return 'cart'
   if (pathname === '/login') return 'account'
   if (pathname === '/sigin') return 'account'
   if (pathname === '/forgot-password') return 'account'
-  return 'products'
+  return 'home'
 }
 
 const Header = () => {
@@ -45,12 +46,12 @@ const Header = () => {
       </NextLink>
 
       <Box as="nav">
-        <NextLink href="/" passHref>
+        <NextLink href="/store" passHref>
           <Link 
             letterSpacing="wide" 
             marginX="2"
-            fontWeight={pathnameActive === 'products' ? 'bold' : undefined}
-          >Produtos</Link>
+            fontWeight={pathnameActive === 'store' ? 'bold' : undefined}
+          >Loja</Link>
         </NextLink>
         <NextLink href="/cart" passHref>
           <Link 
