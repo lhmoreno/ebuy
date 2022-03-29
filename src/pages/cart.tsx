@@ -4,11 +4,11 @@ import Head from 'next/head'
 import { ChangeEventHandler, Fragment, useEffect, useState } from 'react'
 import { Box, Button, Container, Divider, Flex, Heading, Input, Table, Tbody, Text, Th, Thead, Tr } from '@chakra-ui/react'
 
-import { ebuy } from '../services/ebuyApi'
 import { Header } from '../components/Header'
 import { ProductCart } from '../components/ProductCart'
 import { formatPriceInReal } from '../utils/price'
 import { Product } from '../@types/Product'
+import { listFilteredProducts } from '../utils/products'
 
 export interface CartStorage {
   id: number
@@ -21,7 +21,6 @@ interface ProductCart extends Product {
 
 const Cart: NextPage = () => {
   const [cep, setCep] = useState('')
-  // const [subtotal, setSubtotal] = useState(products.reduce((a, b) => a + b.price, 0))
   const [productsCart, setProductsCart] = useState<Array<ProductCart>>([])
   const [subtotal, setSubtotal] = useState(0)
 
@@ -32,11 +31,9 @@ const Cart: NextPage = () => {
     if (cart) {
       (async () => {
         const ids = cart.map(({ id }) => id)
-        const res = await ebuy.get('/products', { params: { id: ids } })
-        const data = res.data as Product[]
+        const productsStore = await listFilteredProducts({ id: ids })
         
-        const products: ProductCart[] = data.map((product, index) => ({ ...product, quanty: cart[index].quanty }))
-
+        const products: ProductCart[] = productsStore.map((product, index) => ({ ...product, quanty: cart[index].quanty }))
         setProductsCart(products)
       })()
     }

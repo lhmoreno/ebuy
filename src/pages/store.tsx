@@ -4,9 +4,9 @@ import type { Product } from '../@types/Product'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { Fragment, useEffect, useState } from 'react'
-import { Box, Checkbox, Container, Flex, Grid, Heading, Input, RangeSlider, RangeSliderFilledTrack, RangeSliderThumb, RangeSliderTrack, SimpleGrid, Tag } from '@chakra-ui/react'
+import { Box, Checkbox, Container, Flex, Heading, SimpleGrid, Tag } from '@chakra-ui/react'
 
-import { listFilteredProducts } from './api/products'
+import { listFilteredProducts } from '../utils/products'
 import { Header } from '../components/Header'
 import { ProductStore } from '../components/ProductStore'
 import { Rating } from '../components/Rating'
@@ -20,66 +20,64 @@ interface SSR {
 type Category = 'smartphone' | 'laptop'
 type Rating = '1' | '2' | '3' | '4' | '5'
 
-interface MyQuery extends ParsedUrlQuery {
-  category?: Category | Category[]
-  rating?: Rating | Rating[]
-}
-
 const Store: NextPage<SSR> = ({ products }) => {
   const router = useRouter()
-  const query = router.query as MyQuery
+  const [productsFiltered, setProductsFiltered] = useState(products)
   const [selectedCategories, setSelectedCategories] = useState<Array<Category>>([])
-  const [selectedRating, setSelectedRating] = useState<Array<Rating>>([])
+  const [selectedRatings, setSelectedRatings] = useState<Array<Rating>>([])
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    if (query.category) {
-      typeof(query.category) === 'string' ? setSelectedCategories([query.category]) : setSelectedCategories([...query.category])
-    } else {
-      setSelectedCategories([])
-    }
-    
-    if (query.rating) {
-      typeof(query.rating) === 'string' ? setSelectedRating([query.rating]) : setSelectedRating([...query.rating])
-    } else {
-      setSelectedRating([])
-    }
-
+    setProductsFiltered(products)
     setIsLoading(false)
-  }, [query])
+  }, [products])
 
-  function handleAddCategory(category: Category) {
-    if (isLoading) return
+  async function handleCategoriesChange(category: Category) {
     setIsLoading(true)
 
-    if (!query.category) return router.push({ query: { ...query, category } })
-    if (typeof(query.category) === 'string') return router.push({ query: { ...query, category: [ query.category, category] } })
-    return router.push({ query: { ...query, category: [...query.category, category] } })
+    if (!selectedCategories.includes(category)) {
+      const newCategories = [...selectedCategories, category]
+      setSelectedCategories(newCategories)
+      const query = { 
+        category: newCategories,
+        rating: selectedRatings
+      }
+      
+      router.push({ href: '/store', query })
+    } else {
+      const newCategories = selectedCategories.filter((cat) => cat !== category)
+      setSelectedCategories(newCategories)
+      const query = { 
+        category: newCategories,
+        rating: selectedRatings
+      }
+      
+      router.push({ href: '/store', query })
+    }
   }
 
-  function handleRemoveCategory(category: Category) {
-    if (isLoading) return
+  async function handleRatingsChange(rating: Rating) {
     setIsLoading(true)
 
-    if (typeof(query.category) === 'string') return router.push({ query: { ...query, category: undefined } })
-    return router.push({ query: { ...query, ategory: query.category?.filter((cat) => cat !== category) } })
-  }
-
-  function handleAddRating(rating: Rating) {
-    if (isLoading) return
-    setIsLoading(true)
-
-    if (!query.rating) return router.push({ query: { ...query, rating } })
-    if (typeof(query.rating) === 'string') return router.push({ query: { ...query, rating: [ query.rating, rating] } })
-    return router.push({ query: { ...query, rating: [...query.rating, rating] } })
-  }
-
-  function handleRemoveRating(rating: Rating) {
-    if (isLoading) return
-    setIsLoading(true)
-
-    if (typeof(query.rating) === 'string') return router.push({ query: { ...query, rating: undefined } })
-    return router.push({ query: { ...query, rating: query.rating?.filter((cat) => cat !== rating) } })
+    if (!selectedRatings.includes(rating)) {
+      const newRatings = [...selectedRatings, rating]
+      setSelectedRatings(newRatings)
+      const query = { 
+        rating: newRatings,
+        category: selectedCategories
+      }
+      
+      router.push({ href: '/store', query })
+    } else {
+      const newRatings = selectedRatings.filter((cat) => cat !== rating)
+      setSelectedRatings(newRatings)
+      const query = { 
+        rating: newRatings,
+        category: selectedCategories
+      }
+      
+      router.push({ href: '/store', query })
+    }
   }
 
   function onBuy(product_id: number) {
@@ -87,7 +85,6 @@ const Store: NextPage<SSR> = ({ products }) => {
     const cart = cartStorage ? JSON.parse(cartStorage) as CartStorage[] : []
 
     const product = cart.find(({ id }) => id === product_id)
-
     if (!product) {
       const newCart = JSON.stringify([...cart, { id: product_id, quanty: 1 }])
       localStorage.setItem('cart', newCart)
@@ -114,21 +111,21 @@ const Store: NextPage<SSR> = ({ products }) => {
 
       <Container maxW="container.xl" display="flex">
         <Box width="full" maxWidth="72" marginRight="8">
-          <Tag paddingX="4" paddingY="2">{ products.length } produto(s) encontrado(s)</Tag>
+          <Tag paddingX="4" paddingY="2">{ productsFiltered.length } produto(s) encontrado(s)</Tag>
 
           <Box mt="4">
             <Heading as="h2" fontSize="xl">Categorias</Heading>
             <Flex mt="1" flexDirection="column">
               <Checkbox 
                 colorScheme="blackAlpha"
-                onChange={(event) => event.target.checked ? handleAddCategory('smartphone') : handleRemoveCategory('smartphone')}
+                onChange={() => handleCategoriesChange('smartphone')}
                 isChecked={selectedCategories.includes('smartphone')}
               >
                 Celular
               </Checkbox>
               <Checkbox 
                 colorScheme="blackAlpha"
-                onChange={(event) => event.target.checked ? handleAddCategory('laptop') : handleRemoveCategory('laptop')}
+                onChange={() => handleCategoriesChange('laptop')}
                 isChecked={selectedCategories.includes('laptop')}
               >
                 Notebook
@@ -141,36 +138,36 @@ const Store: NextPage<SSR> = ({ products }) => {
             <Flex mt="1" flexDirection="column">
               <Checkbox 
                 colorScheme="blackAlpha"
-                onChange={(event) => event.target.checked ? handleAddRating('5') : handleRemoveRating('5')}
-                isChecked={selectedRating.includes('5')}
+                onChange={() => handleRatingsChange('5')}
+                isChecked={selectedRatings.includes('5')}
               >
                 <Rating stars={5} />
               </Checkbox>
               <Checkbox 
                 colorScheme="blackAlpha"
-                onChange={(event) => event.target.checked ? handleAddRating('4') : handleRemoveRating('4')}
-                isChecked={selectedRating.includes('4')}
+                onChange={() => handleRatingsChange('4')}
+                isChecked={selectedRatings.includes('4')}
               >
                 <Rating stars={4} />
               </Checkbox>
               <Checkbox 
                 colorScheme="blackAlpha"
-                onChange={(event) => event.target.checked ? handleAddRating('3') : handleRemoveRating('3')}
-                isChecked={selectedRating.includes('3')}
+                onChange={() => handleRatingsChange('3')}
+                isChecked={selectedRatings.includes('3')}
               >
                 <Rating stars={3} />
               </Checkbox>
               <Checkbox 
                 colorScheme="blackAlpha"
-                onChange={(event) => event.target.checked ? handleAddRating('2') : handleRemoveRating('2')}
-                isChecked={selectedRating.includes('2')}
+                onChange={() => handleRatingsChange('2')}
+                isChecked={selectedRatings.includes('2')}
               >
                 <Rating stars={2} />
               </Checkbox>
               <Checkbox 
                 colorScheme="blackAlpha"
-                onChange={(event) => event.target.checked ? handleAddRating('1') : handleRemoveRating('1')}
-                isChecked={selectedRating.includes('1')}
+                onChange={() => handleRatingsChange('1')}
+                isChecked={selectedRatings.includes('1')}
               >
                 <Rating stars={1} />
               </Checkbox>
@@ -185,7 +182,7 @@ const Store: NextPage<SSR> = ({ products }) => {
               minChildWidth="256px"
               spacing="8"
             >
-              { products.map(({ id, image_url, title, price, rating }) => (
+              { productsFiltered.map(({ id, image_url, title, price, rating }) => (
                   <ProductStore 
                     key={id}
                     id={id}
@@ -214,17 +211,14 @@ const Store: NextPage<SSR> = ({ products }) => {
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  let categories: string[] | undefined = undefined
-  let ratings: string[] | undefined = undefined
-
-  if (query.category) categories = typeof(query.category) === 'string' ? [query.category] : query.category
-  if (query.rating) ratings = typeof(query.rating) === 'string' ? [query.rating] : query.rating
-
-  const products = await listFilteredProducts({ categories, ratings })
+  const products = await listFilteredProducts({ 
+    category: query.category,
+    rating: query.rating
+  })
 
   return {
     props: {
-      products: products ? products : []
+      products
     }
   }
 }
