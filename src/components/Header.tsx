@@ -3,15 +3,15 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { Box, Container, Heading, Link } from '@chakra-ui/react'
 
-type Pathname = '/' | '/store' | '/cart' | '/login' | '/sigin' | '/forgot-password'
+type Pathname = '/' | '/store' | '/cart' | '/signin' | '/forgot-password'
 type PageName = 'home' | 'store' | 'cart' | 'account'
 
 const handlePageName: (pathname: Pathname) => PageName = (pathname) =>  {
   if (pathname === '/') return 'home'
   if (pathname === '/store') return 'store'
   if (pathname === '/cart') return 'cart'
-  if (pathname === '/login') return 'account'
-  if (pathname === '/sigin') return 'account'
+  if (pathname === '/signin') return 'account'
+  if (pathname.includes( 'admin')) return 'account'
   if (pathname === '/forgot-password') return 'account'
   return 'home'
 }
@@ -60,12 +60,12 @@ const Header = () => {
             fontWeight={pathnameActive === 'cart' ? 'bold' : undefined}
           >Carrinho</Link>
         </NextLink>
-        <NextLink href="/login">
+        <NextLink href="/signin">
           <Link 
             letterSpacing="wide" 
             marginX="2"
             fontWeight={pathnameActive === 'account' ? 'bold' : undefined}
-          >Conecte-se</Link>
+          >Administração</Link>
         </NextLink>
       </Box>
     </Container>
