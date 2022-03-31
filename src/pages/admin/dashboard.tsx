@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 
 import Head from 'next/head'
-import { supabaseClient } from '@supabase/supabase-auth-helpers/nextjs'
+import { supabaseClient, withAuthRequired } from '@supabase/supabase-auth-helpers/nextjs'
 import { Button, Container, Flex, Heading, Input } from '@chakra-ui/react'
 import { FormEvent, Fragment, useRef } from 'react'
 
@@ -192,5 +192,12 @@ const Dashboard: NextPage = () => {
     </Fragment>
   )
 }
+
+export const getServerSideProps = withAuthRequired({ 
+  redirectTo: '/signin' ,
+  async getServerSideProps() {
+    return { props: {} }
+  }
+})
 
 export default Dashboard
