@@ -1,19 +1,14 @@
 import type { NextPage } from 'next'
 
 import Head from 'next/head'
-import { ChangeEventHandler, Fragment, useEffect, useState } from 'react'
+import { ChangeEventHandler, Fragment, useState } from 'react'
 import { Box, Button, Container, Divider, Flex, Heading, Input, Table, Tbody, Text, Th, Thead, Tr } from '@chakra-ui/react'
 
 import { Header } from '../components/Header'
 import { ProductCart } from '../components/ProductCart'
 import { formatPriceInReal } from '../utils/price'
 import { Product } from '../@types/Product'
-import { listFilteredProducts } from '../utils/products'
-
-export interface CartStorage {
-  id: number
-  quanty: number
-}
+import { useCart } from '../hooks/useCart'
 
 interface ProductCart extends Product {
   quanty: number
@@ -21,23 +16,7 @@ interface ProductCart extends Product {
 
 const Cart: NextPage = () => {
   const [cep, setCep] = useState('')
-  const [productsCart, setProductsCart] = useState<Array<ProductCart>>([])
-  const [subtotal, setSubtotal] = useState(0)
-
-  useEffect(() => {
-    const cartStorage = localStorage.getItem('cart')
-    const cart = cartStorage ? JSON.parse(cartStorage) as CartStorage[] : []
-    
-    if (cart) {
-      (async () => {
-        const ids = cart.map(({ id }) => id)
-        const productsStore = await listFilteredProducts({ id: ids })
-        
-        const products: ProductCart[] = productsStore.map((product, index) => ({ ...product, quanty: cart[index].quanty }))
-        setProductsCart(products)
-      })()
-    }
-  }, [])
+  const { products, subtotal, delivery } = useCart()
 
   const onChangeCep: ChangeEventHandler<HTMLInputElement> = (event) => {
     if (event.target.value.length <= 8 ) setCep(event.target.value)
@@ -54,28 +33,30 @@ const Cart: NextPage = () => {
       <Header />
 
       <Container maxW="container.xl" display="grid" gridTemplateColumns="3fr 1fr" gap="8">
-        <Table flexDirection="column">
-          <Thead>
-            <Tr>
-              <Th>Produto</Th>
-              <Th>Quantidade</Th>
-              <Th isNumeric>Valor</Th>
-            </Tr>
-          </Thead>
+        { products.length === 0 ? (
+            <p>Sem produtos ;(</p>
+          ) : (
+            <Table flexDirection="column">
+              <Thead>
+                <Tr>
+                  <Th>Produto</Th>
+                  <Th>Preço</Th>
+                  <Th>Quantidade</Th>
+                  <Th isNumeric>Valor</Th>
+                </Tr>
+              </Thead>
 
-          <Tbody>
-            { productsCart.map(({ id, image_url, title, price, quanty }) => (
-              <ProductCart 
-                key={id}
-                quanty={quanty}
-                image_url={image_url}
-                title={title}
-                price={price}
-                onChangePrice={(type, number) => type === 'add' ? setSubtotal(v => v + number) : setSubtotal(v => v - number)}
-              />
-            )) }
-          </Tbody>
-        </Table>
+              <Tbody>
+                { products.map((props) => (
+                  <ProductCart 
+                    key={props.id}
+                    {...props}
+                  />
+                )) }
+              </Tbody>
+            </Table>
+          )
+        }
         <Flex flexDirection="column" gap="8">
           <Box 
             backgroundColor="blackAlpha.100" 
@@ -113,7 +94,7 @@ const Cart: NextPage = () => {
             </Flex>
             <Flex mt="4" justifyContent="space-between">
               <Text>Valor:</Text>
-              <Text fontWeight="bold">R$30,20</Text>
+              <Text fontWeight="bold">{ formatPriceInReal(delivery) }</Text>
             </Flex>
           </Box>
           <Box 
@@ -137,12 +118,12 @@ const Cart: NextPage = () => {
             </Flex>
             <Flex mt="4" justifyContent="space-between">
               <Text>Frete:</Text>
-              <Text fontWeight="bold">R$30,20</Text>
+              <Text fontWeight="bold">{ formatPriceInReal(delivery) }</Text>
             </Flex>
             <Divider my="4" borderColor="white"  borderWidth={4} variant="dashed" />
             <Flex justifyContent="space-between">
               <Text fontSize="lg">Total:</Text>
-              <Text fontSize="lg" fontWeight="bold">R$12.376,10</Text>
+              <Text fontSize="lg" fontWeight="bold">{ formatPriceInReal(delivery + subtotal) }</Text>
             </Flex>
 
             <Button my="6" width="full" variant="outline" colorScheme="blackAlpha">

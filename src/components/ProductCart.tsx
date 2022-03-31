@@ -1,48 +1,23 @@
-import { Button, Flex, Heading, Image, Td, Text, Tr } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
+import type { ProductCartProps } from '../contexts/CartContext'
 
+import { DeleteIcon } from '@chakra-ui/icons'
+import { Button, Flex, Heading, Image, Input, Td, Text, Tr } from '@chakra-ui/react'
+
+import { useCart } from '../hooks/useCart'
 import { formatPriceInReal } from '../utils/price'
 
-export interface ProductCartProps {
-  title: string
-  price: number
-  image_url: string
-  quanty: number
-  onChangePrice?: (type: 'add' | 'sub', price: number) => void
-}
-
-let isAdd = true
-
-const ProductCart = ({ image_url, quanty, title, price: basePrice, onChangePrice }: ProductCartProps) => {
-  const [amount, setAmount] = useState(quanty)
-  const [price, setPrice] = useState(basePrice * quanty)
-
-  useEffect(() => {
-    if (onChangePrice) {
-      const type = isAdd ? 'add' : 'sub'
-
-      onChangePrice(type, basePrice)
-    }
-  }, [price])
-
-  function add() {
-    setAmount(s => ++s)
-    setPrice(s => s + basePrice)
-    isAdd = true
-  }
-
-  function subtract() {
-    if (amount !== 1) {
-      setAmount(s => --s)
-      setPrice(s => s - basePrice)
-      isAdd = false
-    }
-  }
+const ProductCart = ({ id, title, image_url, price, quanty }: ProductCartProps) => {
+  const { onChangeProductQuanty, deleteProduct } = useCart()
 
   return (
     <Tr>
       <Td>
         <Flex alignItems="center" gap="6">
+          <Button onClick={() => deleteProduct(id)}>
+            <DeleteIcon 
+              color="blackAlpha.700"
+            />
+          </Button>
           <Image 
             src={image_url} alt="Carro"
             borderRadius="md"
@@ -58,22 +33,26 @@ const ProductCart = ({ image_url, quanty, title, price: basePrice, onChangePrice
       </Td>
 
       <Td>
+        <Text marginTop="1">
+          { formatPriceInReal(price) }
+        </Text>
+      </Td>
+
+      <Td>
         <Flex alignItems="center">
-          <Button type="button" fontSize="lg" color="blackAlpha.700" onClick={subtract}>
-            -
-          </Button>
-          <Text width="12" textAlign="center">
-            { amount }
-          </Text>
-          <Button type="button" color="blackAlpha.700" onClick={add}>
-            +
-          </Button>
+          <Input 
+            maxWidth="14"
+            type="number"
+            textAlign="center"
+            value={quanty}
+            onChange={({ target }) => onChangeProductQuanty(id, Number(target.value))}
+          />
         </Flex>
       </Td>
 
       <Td isNumeric>
         <Text marginTop="1">
-          { formatPriceInReal(price) }
+          { formatPriceInReal(price * quanty) }
         </Text>
       </Td>
     </Tr>

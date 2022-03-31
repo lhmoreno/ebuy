@@ -7,11 +7,10 @@ import { Fragment, useEffect, useState } from 'react'
 import { Box, Checkbox, Container, Flex, Heading, SimpleGrid, Tag } from '@chakra-ui/react'
 
 import { listFilteredProducts } from '../utils/products'
+import { useCart } from '../hooks/useCart'
 import { Header } from '../components/Header'
 import { ProductStore } from '../components/ProductStore'
 import { Rating } from '../components/Rating'
-import { ParsedUrlQuery } from 'querystring'
-import { CartStorage } from './cart'
 
 interface SSR {
   products: Array<Product>
@@ -22,6 +21,7 @@ type Rating = '1' | '2' | '3' | '4' | '5'
 
 const Store: NextPage<SSR> = ({ products }) => {
   const router = useRouter()
+  const { addProduct } = useCart()
   const [productsFiltered, setProductsFiltered] = useState(products)
   const [selectedCategories, setSelectedCategories] = useState<Array<Category>>([])
   const [selectedRatings, setSelectedRatings] = useState<Array<Rating>>([])
@@ -81,22 +81,8 @@ const Store: NextPage<SSR> = ({ products }) => {
   }
 
   function onBuy(product_id: number) {
-    const cartStorage = localStorage.getItem('cart')
-    const cart = cartStorage ? JSON.parse(cartStorage) as CartStorage[] : []
-
-    const product = cart.find(({ id }) => id === product_id)
-    if (!product) {
-      const newCart = JSON.stringify([...cart, { id: product_id, quanty: 1 }])
-      localStorage.setItem('cart', newCart)
-    } else {
-      const newCart = JSON.stringify(cart.map((productCart) => {
-        if (productCart.id === product_id) return { ...productCart, quanty: productCart.quanty + 1 }
-        return productCart
-      }))
-      localStorage.setItem('cart', newCart)
-    }
-
-    router.push('cart')
+    addProduct(product_id)
+    router.push('/cart')
   }
 
   return (
