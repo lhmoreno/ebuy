@@ -18,7 +18,7 @@ const Dashboard: NextPage = () => {
   const imageRef = useRef<InputElement>(null)
   const ratingRef = useRef<HTMLInputElement>(null)
 
-  async function onSubmitSignIn(event: FormEvent) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault()
 
     if (!titleRef.current || !priceRef.current || !categoryRef.current || !imageRef.current || !ratingRef.current) return
@@ -50,7 +50,7 @@ const Dashboard: NextPage = () => {
       return
     }
 
-    if (image === '') return
+    if (image === '' || !imageRef.current.files) return
     
     if (imageRef.current.isFocused) {
       ratingRef.current.focus()
@@ -59,11 +59,22 @@ const Dashboard: NextPage = () => {
     
     if (Number(rating) > 5 || Number(rating) < 0) return
 
+    const imageName = Math.random().toString(36).slice(2) + '.png'
+
+    await supabaseClient
+      .storage
+      .from('products')
+      .upload(imageName, imageRef.current.files[0], {
+        contentType: 'image/png',
+        cacheControl: '3600',
+        upsert: false
+      })
+
     await supabaseClient.from('products').insert({
       title,
       price,
       category,
-      image,
+      image: imageName,
       rating
     })
   }
@@ -101,7 +112,7 @@ const Dashboard: NextPage = () => {
             >
               Novo produto
             </Heading>
-            <form onSubmit={onSubmitSignIn}>
+            <form onSubmit={onSubmit}>
             <Input 
               ref={titleRef}
               autoFocus
@@ -168,8 +179,8 @@ const Dashboard: NextPage = () => {
                   return imageRef.current.isFocused = false
                 }
               }}
-              type="text"
-              placeholder="Digite o nome da imagem"
+              type="file"
+              accept="image/png"
               marginTop="2"
               backgroundColor="white"
             />
