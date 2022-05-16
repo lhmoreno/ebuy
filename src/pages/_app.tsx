@@ -1,21 +1,9 @@
 import type { AppProps } from 'next/app'
 
-import { ChakraProvider } from '@chakra-ui/react'
-import { UserProvider } from '@supabase/supabase-auth-helpers/react'
-import { supabaseClient } from '@supabase/supabase-auth-helpers/nextjs'
+import '../styles/globals.css'
 
-import { CartContextProvider } from '../contexts/CartContext'
-
-function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <UserProvider supabaseClient={supabaseClient}>
-      <ChakraProvider>
-          <CartContextProvider>
-            <Component {...pageProps} />
-          </CartContextProvider>
-      </ChakraProvider>
-    </UserProvider>
-  )
+function Ebuy({ Component, pageProps }: AppProps) {
+  return <Component {...pageProps} />
 }
 
-export default MyApp
+export default Ebuy
