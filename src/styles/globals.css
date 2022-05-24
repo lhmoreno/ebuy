@@ -8,11 +8,18 @@
     font-family: 'Roboto', sans-serif;
   }
 
-  .font-rubik {
+  h1,
+  h2 {
     font-family: 'Rubik', sans-serif;
   }
 
-  .container-sm {
-    @apply container px-6
+  .ebuy-container {
+    @apply px-4
+  }
+
+  @media (min-width: 768px) {
+    .ebuy-container {
+      @apply px-8
+    }
   }
 }
