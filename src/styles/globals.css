@@ -11,4 +11,12 @@
   .w-4\.5 {
     width: 1.125rem;
   }
+
+  .max-w-search {
+    max-width: 23.75rem;
+  }
+
+  .max-w-container {
+    max-width: 48rem;
+  }
 }
