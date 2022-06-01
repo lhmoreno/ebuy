@@ -1,68 +1,88 @@
 import type { NextPage } from 'next'
-import { FormEvent, Fragment, useState } from 'react'
+import Image from 'next/image'
+import { useRouter } from 'next/router'
+import { ChangeEvent, FormEvent, Fragment, useEffect, useState } from 'react'
 import Head from 'next/head'
+
+import imageIphone12 from '../assets/images/iphone-12.png'
+import imageIphone11 from '../assets/images/iphone-11.png'
+import imageIphone7 from '../assets/images/iphone-7.png'
+import imageMonitor from '../assets/images/monitor.png'
+import imageComputer from '../assets/images/computer.png'
 
 const fakeProducts = [
   {
-    image: "/images/product.jpg",
-    title: "TItle complete product info here",
-    price: "R$ 23,15"
+    image: imageIphone12,
+    title: "iPhone 12 Apple 64GB Vermelho Tela de 6,1”, Câmera Dupla de 12MP, iOS",
+    price: 999.90
   },
   {
-    image: "/images/product.jpg",
-    title: "TItle complete product info here",
-    price: "R$ 23,15"
+    image: imageIphone12,
+    title: "iPhone 12 Pro Max Apple 256GB Vermelho Tela de 6,7 Câmera Tripla de 12MP, iOS",
+    price: 890.99
   },
   {
-    image: "/images/product.jpg",
-    title: "TItle complete product info here",
-    price: "R$ 23,15"
+    image: imageIphone11,
+    title: "iPhone 11 Apple 64GB Branco 6,1” 12MP iOS",
+    price: 725.50
   },
   {
-    image: "/images/product.jpg",
-    title: "TItle complete product info here",
-    price: "R$ 23,15"
+    image: imageIphone7,
+    title: "Apple iPhone 7 Vitrine 128 Gb 4g Original Promoção",
+    price: 347.80
   },
   {
-    image: "/images/product.jpg",
-    title: "TItle complete product info here",
-    price: "R$ 23,15"
+    image: imageMonitor,
+    title: "Monitor Prizi Slim 19 Widescreen Led Hd Preto HDMI e Vga",
+    price: 155.60
   },
   {
-    image: "/images/product.jpg",
-    title: "TItle complete product info here",
-    price: "R$ 23,15"
-  },
-  {
-    image: "/images/product.jpg",
-    title: "TItle complete product info here",
-    price: "R$ 23,15"
-  },
-  {
-    image: "/images/product.jpg",
-    title: "TItle complete product info here",
-    price: "R$ 23,15"
-  },
-  {
-    image: "/images/product.jpg",
-    title: "TItle complete product info here",
-    price: "R$ 23,15"
-  },
-  {
-    image: "/images/product.jpg",
-    title: "TItle complete product info here",
-    price: "R$ 23,15"
+    image: imageComputer,
+    title: "Computador Completo Intel Core I5 8gb Hd 500gb Monitor Led 19.5",
+    price: 479.90
   }
 ]
 
+function handlePrice(price: number) {
+  const value = price.toFixed(2).toString().replace('.', ',')
+
+  return `R$ ${value}`
+}
+
 const Home: NextPage = () => {
-  const [search, setSearch] = useState('')
+  const router = useRouter()
+  const searchQuery = router.query.search ? typeof (router.query.search) === 'string' ? router.query.search : router.query.search[0] : ''
+
+  const [products, setProducts] = useState(fakeProducts.sort((a, b) => b.price - a.price))
+  const [search, setSearch] = useState({ value: searchQuery })
+  const [order, setOrder] = useState<'up' | 'down'>('down')
+
+  useEffect(() => {
+    setSearch({ value: searchQuery })
+  }, [searchQuery])
+
+  function handleSearchProcuctInput(event: ChangeEvent<HTMLInputElement>) {
+    setSearch({ value: event.target.value })
+  }
 
   function handleSearchProduct(event: FormEvent) {
     event.preventDefault()
 
-    console.log(search)
+    if (search.value === '') return
+
+    router.push(`/?search=${search.value.toLocaleLowerCase()}`)
   }
+
+  function handleOrder() {
+    if (order === 'down') {
+      setProducts(prods => prods.sort((a, b) => a.price - b.price))
+      setOrder('up')
+    } else {
+      setProducts(prods => prods.sort((a, b) => b.price - a.price))
+      setOrder('down')
+    }
+  }
+
 
   return (
     <Fragment>
@@ -123,7 +143,9 @@ const Home: NextPage = () => {
             <input
               className="w-full h-10 pl-2 rounded-l text-gray-900 placeholder:gray-400"
               type="text"
-              placeholder="Macbook"
+              placeholder="Busque por um produto"
+              value={search.value}
+              onChange={handleSearchProcuctInput}
             />
             <button
               className="h-10 px-4 rounded-r bg-white"
@@ -146,46 +168,54 @@ const Home: NextPage = () => {
 
       {/* ORDER */}
       <div className="bg-gray-200">
-        <div className="mx-auto max-w-container px-4 py-2 flex gap-2 text-gray-500 sm:px-6 md:px-12">
-          <svg
-            className="w-3.5"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+        <div className="mx-auto max-w-container px-4 py-2 text-gray-500 sm:px-6 md:px-12">
+          <button
+            className="flex items-center gap-2"
+            type="button"
+            onClick={handleOrder}
           >
-            <path
-              className="fill-gray-500"
-              d="M2.56087 13.0605L10.5004 5.121V22.5C10.5004 23.328 11.1724 24 12.0004 24C12.8284 24 13.5004 23.328 13.5004 22.5V5.121L21.4399 13.0605C22.0264 13.647 22.9759 13.647 23.5609 13.0605C24.1459 12.474 24.1474 11.5245 23.5609 10.9395L13.0609 0.4395C12.9229 0.3015 12.7579 0.1905 12.5749 0.114C12.3919 0.0375003 12.1954 0 12.0004 0C11.6164 0 11.2324 0.147 10.9399 0.4395L0.439875 10.9395C-0.146625 11.526 -0.146625 12.4755 0.439875 13.0605C1.02638 13.6455 1.97587 13.647 2.56087 13.0605Z"
-            />
-          </svg>
-          <p>PREÇO</p>
+            <svg
+              className={order === 'up' ? "w-3.5" : "w-3.5 rotate-180"}
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                className="fill-gray-500"
+                d="M2.56087 13.0605L10.5004 5.121V22.5C10.5004 23.328 11.1724 24 12.0004 24C12.8284 24 13.5004 23.328 13.5004 22.5V5.121L21.4399 13.0605C22.0264 13.647 22.9759 13.647 23.5609 13.0605C24.1459 12.474 24.1474 11.5245 23.5609 10.9395L13.0609 0.4395C12.9229 0.3015 12.7579 0.1905 12.5749 0.114C12.3919 0.0375003 12.1954 0 12.0004 0C11.6164 0 11.2324 0.147 10.9399 0.4395L0.439875 10.9395C-0.146625 11.526 -0.146625 12.4755 0.439875 13.0605C1.02638 13.6455 1.97587 13.647 2.56087 13.0605Z"
+              />
+            </svg>
+            <p>PREÇO</p>
+          </button>
         </div>
       </div>
 
       {/* TEXT-SEARCH */}
       <div>
         <div className="mx-auto max-w-container px-4 py-8 flex flex-col sm:px-6 md:px-12">
-          <p className="font-medium text-gray-400">VOCÊ BUSCOU POR:</p>
-          <p className="font-medium text-purple-700">MACBOOK</p>
+          {search.value.length > 0 && (
+            <Fragment>
+              <p className="font-medium text-gray-400">VOCÊ BUSCOU POR:</p>
+              <p className="font-medium text-purple-700">{searchQuery.toUpperCase()}</p>
+            </Fragment>
+          )}
         </div>
       </div>
 
       {/* PRODUCTS */}
-      <div>
-        <div className="mx-auto max-w-container pt-0.5 flex flex-col gap-0.5 bg-gray-200">
-          {fakeProducts.map((product, index) => (
+      <div className="pb-16">
+        <div className="mx-auto max-w-container py-0.5 flex flex-col gap-0.5 bg-gray-200">
+          {products.map((product, index) => (
             <div
               className="px-4 py-2 flex gap-4 bg-white text-gray-900"
               key={String(index)}
             >
-              <img
-                className="w-28 object-contain"
-                src="/images/product.jpg"
-                alt="product"
-              />
+              <div className="max-w-image">
+                <Image src={product.image} alt={product.title} />
+              </div>
               <div className="flex flex-col justify-between">
-                <p>Mouse Gamer Logitech G203 LIGHTSYNC RGB...</p>
-                <p className="text-xl text-orange-600 font-medium">R$ 200,00 <span className="text-sm font-normal">à vista</span></p>
-                <p className="text-sm text-gray-500 font-bold">R$ 160,00 <span className="text-xs font-normal">em até 10x</span></p>
+                <p>{product.title}</p>
+                <p className="text-xl text-orange-600 font-medium">{handlePrice(product.price)} <span className="text-sm font-normal">à vista</span></p>
+                <p className="text-sm text-gray-500 font-bold">{handlePrice(product.price / 10)} <span className="text-xs font-normal">em até 10x</span></p>
               </div>
             </div>
           ))}
