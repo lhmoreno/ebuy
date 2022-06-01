@@ -19,4 +19,8 @@
   .max-w-container {
     max-width: 48rem;
   }
+
+  .max-w-image {
+    max-width: 7rem;
+  }
 }
